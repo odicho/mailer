@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "dev": "bun run --hot ./src/index.ts",
-    "run": "bun run ./src/index.ts"
+    "start": "bun run ./src/index.ts"
   },
   "keywords": [],
   "author": "",
