@@ -7,7 +7,9 @@
     "dev": "bun run --hot ./src/index.ts",
     "start": "bun run ./src/index.ts",
     "lint": "eslint . --cache --cache-location \"node_modules/.cache/.eslintcache\" --max-warnings 0",
-    "lint:fix": "eslint . --fix --cache --cache-location \"node_modules/.cache/.eslintcache\" --max-warnings 0"
+    "lint:fix": "eslint . --fix --cache --cache-location \"node_modules/.cache/.eslintcache\" --max-warnings 0",
+    "generate-endpoint": "bun run ./src/utils/generateEndpoint generate",
+    "prettify": "npx prettier --write \"src/**/*.{js,jsx,ts,tsx,json}\""
   },
   "keywords": [],
   "author": "",

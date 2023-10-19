@@ -58,7 +58,7 @@ program.command('generate').action(async () => {
   const importStatement = getRoutesImportStatement(endpointNameCamel, endpointName);
 
   // Find correct position to insert new route in src/routes.ts
-  const routeFilePath = path.join('src', 'routes.ts');
+  const routeFilePath = path.join('src', 'utils', 'routes.ts');
   let fileContent = fs.readFileSync(routeFilePath, 'utf8');
 
   // Find where the last import ends
@@ -184,7 +184,7 @@ function getRegisterRoutesFileContent(endpointNameCamel: string, endpointName: s
 }
 
 function getRoutesImportStatement(endpointNameCamel: string, endpointName: string) {
-  return `import { ${endpointNameCamel}Routes } from './api/${endpointName}';\n`;
+  return `import { ${endpointNameCamel}Routes } from '../api/${endpointName}';\n`;
 }
 
 function toCamelCase(str: string) {
