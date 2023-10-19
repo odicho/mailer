@@ -1,1 +1,1 @@
-# mailnow
+# mailer
