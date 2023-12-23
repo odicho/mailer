@@ -62,13 +62,13 @@ import { server } from './server';
 // });
 
 async function main() {
-  try {
-    const address = await server.listen({ host: '0.0.0.0', port: 3000 });
-    console.log(`Server listening at ${address}`);
-  } catch (e) {
-    console.error(e);
-    process.exit(1);
-  }
+	try {
+		const address = await server.listen({ host: '0.0.0.0', port: 3000 });
+		console.log(`Server listening at ${address}`);
+	} catch (e) {
+		console.error(e);
+		process.exit(1);
+	}
 }
 
 main();

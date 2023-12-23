@@ -17,90 +17,92 @@ const error = chalk.bold.red;
 const program = new Command();
 
 program.command('generate').action(async () => {
-  let endpointName, dirPath;
-  do {
-    const answers = await inquirer.prompt([
-      {
-        name: 'endpoint',
-        message: 'Enter the endpoint name:',
-        type: 'input',
-      },
-    ]);
+	let endpointName;
+	let dirPath;
 
-    endpointName = answers.endpoint;
-    if (!isKebabCase(endpointName)) {
-      console.log(error(`${endpointName} is an invalid endpoint name: kebab-case is required\n`));
-      continue;
-    }
-    dirPath = path.join('src', 'api', endpointName);
+	for (;;) {
+		const answers = await inquirer.prompt([
+			{
+				name: 'endpoint',
+				message: 'Enter the endpoint name:',
+				type: 'input',
+			},
+		]);
 
-    // Check if directory already exists
-    if (fs.existsSync(dirPath)) {
-      console.log(error(`${endpointName} already exists!\n`));
-      continue;
-    }
+		endpointName = answers.endpoint;
+		if (!isKebabCase(endpointName)) {
+			console.log(error(`${endpointName} is an invalid endpoint name: kebab-case is required\n`));
+			continue;
+		}
+		dirPath = path.join('src', 'api', endpointName);
 
-    break;
-  } while (true);
+		// Check if directory already exists
+		if (fs.existsSync(dirPath)) {
+			console.log(error(`${endpointName} already exists!\n`));
+			continue;
+		}
 
-  // Create directory for the new endpoint
-  fs.mkdirSync(dirPath, { recursive: true });
+		break;
+	}
 
-  const endpointNameCamel = toCamelCase(endpointName);
-  const endpointNamePascal = toPascalCase(endpointName);
+	// Create directory for the new endpoint
+	fs.mkdirSync(dirPath, { recursive: true });
 
-  // Define file templates
-  const controllerTemplate = getControllerFileContent(endpointNamePascal);
-  const routesTemplate = getRoutesFileContent(endpointNamePascal, endpointNameCamel);
-  const serviceTemplate = getServiceFileContent(endpointNamePascal);
-  const indexTemplate = getIndexFileContent(endpointNameCamel);
-  const routeTemplate = getRegisterRoutesFileContent(endpointNameCamel, endpointName);
-  const importStatement = getRoutesImportStatement(endpointNameCamel, endpointName);
+	const endpointNameCamel = toCamelCase(endpointName);
+	const endpointNamePascal = toPascalCase(endpointName);
 
-  // Find correct position to insert new route in src/routes.ts
-  const routeFilePath = path.join('src', 'utils', 'routes.ts');
-  let fileContent = fs.readFileSync(routeFilePath, 'utf8');
+	// Define file templates
+	const controllerTemplate = getControllerFileContent(endpointNamePascal);
+	const routesTemplate = getRoutesFileContent(endpointNamePascal, endpointNameCamel);
+	const serviceTemplate = getServiceFileContent(endpointNamePascal);
+	const indexTemplate = getIndexFileContent(endpointNameCamel);
+	const routeTemplate = getRegisterRoutesFileContent(endpointNameCamel, endpointName);
+	const importStatement = getRoutesImportStatement(endpointNameCamel, endpointName);
 
-  // Find where the last import ends
-  const lastImportIndex = fileContent.lastIndexOf('import');
+	// Find correct position to insert new route in src/routes.ts
+	const routeFilePath = path.join('src', 'utils', 'routes.ts');
+	let fileContent = fs.readFileSync(routeFilePath, 'utf8');
 
-  // Check if lastImportIndex is valid
-  if (lastImportIndex !== -1) {
-    // Find the end of the line after the last import
-    const lastImportEndIndex = fileContent.indexOf('\n', lastImportIndex);
+	// Find where the last import ends
+	const lastImportIndex = fileContent.lastIndexOf('import');
 
-    // Insert the new import after the last existing one
-    fileContent =
-      fileContent.slice(0, lastImportEndIndex + 1) +
-      importStatement +
-      fileContent.slice(lastImportEndIndex + 1);
-  }
+	// Check if lastImportIndex is valid
+	if (lastImportIndex !== -1) {
+		// Find the end of the line after the last import
+		const lastImportEndIndex = fileContent.indexOf('\n', lastImportIndex);
 
-  const functionEndIndex = fileContent.lastIndexOf('}');
+		// Insert the new import after the last existing one
+		fileContent =
+			fileContent.slice(0, lastImportEndIndex + 1) +
+			importStatement +
+			fileContent.slice(lastImportEndIndex + 1);
+	}
 
-  // Not really needed, just safetyguard
-  if (functionEndIndex !== -1) {
-    // Insert the new route at the end of the registerRoutes function
-    fileContent =
-      fileContent.slice(0, functionEndIndex) + routeTemplate + fileContent.slice(functionEndIndex);
+	const functionEndIndex = fileContent.lastIndexOf('}');
 
-    // Rewrite the file
-    fs.writeFileSync(routeFilePath, fileContent);
-  }
+	// Not really needed, just safetyguard
+	if (functionEndIndex !== -1) {
+		// Insert the new route at the end of the registerRoutes function
+		fileContent =
+			fileContent.slice(0, functionEndIndex) + routeTemplate + fileContent.slice(functionEndIndex);
 
-  // Write templates to files
-  fs.writeFileSync(path.join(dirPath, `${endpointNameCamel}.controller.ts`), controllerTemplate);
-  fs.writeFileSync(path.join(dirPath, `${endpointNameCamel}.routes.ts`), routesTemplate);
-  fs.writeFileSync(path.join(dirPath, `${endpointNameCamel}.service.ts`), serviceTemplate);
-  fs.writeFileSync(path.join(dirPath, 'index.ts'), indexTemplate);
+		// Rewrite the file
+		fs.writeFileSync(routeFilePath, fileContent);
+	}
 
-  console.log('Files generated successfully');
+	// Write templates to files
+	fs.writeFileSync(path.join(dirPath, `${endpointNameCamel}.controller.ts`), controllerTemplate);
+	fs.writeFileSync(path.join(dirPath, `${endpointNameCamel}.routes.ts`), routesTemplate);
+	fs.writeFileSync(path.join(dirPath, `${endpointNameCamel}.service.ts`), serviceTemplate);
+	fs.writeFileSync(path.join(dirPath, 'index.ts'), indexTemplate);
+
+	console.log('Files generated successfully');
 });
 
 program.parse(process.argv);
 
 function getControllerFileContent(endpointNamePascal: string) {
-  return `import type { FastifyReply, FastifyRequest } from 'fastify';
+	return `import type { FastifyReply, FastifyRequest } from 'fastify';
 import { get${endpointNamePascal}, post${endpointNamePascal} } from './';
 import { getError } from '../../utils/getError';
 
@@ -137,7 +139,7 @@ export async function post${endpointNamePascal}Handler(
 }
 
 function getRoutesFileContent(endpointNamePascal: string, endpointNameCamel: string) {
-  return `import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
+	return `import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
 import { get${endpointNamePascal}Handler, post${endpointNamePascal}Handler } from './';
     
 export function ${endpointNameCamel}Routes(
@@ -154,7 +156,7 @@ export function ${endpointNameCamel}Routes(
 }
 
 function getServiceFileContent(endpointNamePascal: string) {
-  return `export async function get${endpointNamePascal}(id: number) {
+	return `export async function get${endpointNamePascal}(id: number) {
     // e.g. query db here
 
     return id;
@@ -169,14 +171,14 @@ export async function post${endpointNamePascal}(example: string) {
 }
 
 function getIndexFileContent(endpointNameCamel: string) {
-  return `export * from './${endpointNameCamel}.controller';
+	return `export * from './${endpointNameCamel}.controller';
 export * from './${endpointNameCamel}.routes';
 export * from './${endpointNameCamel}.service';
 `;
 }
 
 function getRegisterRoutesFileContent(endpointNameCamel: string, endpointName: string) {
-  return `
+	return `
     app.register(${endpointNameCamel}Routes, {
         prefix: 'uxr-cal/${endpointName}',
     });
@@ -184,26 +186,26 @@ function getRegisterRoutesFileContent(endpointNameCamel: string, endpointName: s
 }
 
 function getRoutesImportStatement(endpointNameCamel: string, endpointName: string) {
-  return `import { ${endpointNameCamel}Routes } from '../api/${endpointName}';\n`;
+	return `import { ${endpointNameCamel}Routes } from '../api/${endpointName}';\n`;
 }
 
 function toCamelCase(str: string) {
-  return str.replace(/-([a-z])/g, (g) => {
-    return g[1].toUpperCase();
-  });
+	return str.replace(/-([a-z])/g, (g) => {
+		return g[1].toUpperCase();
+	});
 }
 
 function toPascalCase(str: string) {
-  const camelCase = toCamelCase(str);
-  return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+	const camelCase = toCamelCase(str);
+	return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
 }
 
 function isKebabCase(str: string) {
-  const kebabCaseRegex = /^[a-z]+(-[a-z]+)*$/;
-  return kebabCaseRegex.test(str);
+	const kebabCaseRegex = /^[a-z]+(-[a-z]+)*$/;
+	return kebabCaseRegex.test(str);
 }
 
-process.on('SIGINT', function () {
-  console.log(chalk.blue('\nBye bye!'));
-  process.exit();
+process.on('SIGINT', () => {
+	console.log(chalk.blue('\nBye bye!'));
+	process.exit();
 });

@@ -1,11 +1,11 @@
 export async function getEmails(id: number) {
-  // e.g. query db here
+	// e.g. query db here
 
-  return id;
+	return id;
 }
 
 export async function postEmails(example: string) {
-  // e.g. insert to db here
+	// e.g. insert to db here
 
-  return example;
+	return example;
 }
