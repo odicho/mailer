@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "bun run --hot ./src/index.ts",
     "start": "bun run ./src/index.ts",
-    "lint": "eslint . --cache --cache-location \"node_modules/.cache/.eslintcache\" --max-warnings 0",
-    "lint:fix": "eslint . --fix --cache --cache-location \"node_modules/.cache/.eslintcache\" --max-warnings 0",
-    "generate-endpoint": "bun run ./src/utils/generateEndpoint generate",
-    "prettify": "npx prettier --write \"src/**/*.{js,jsx,ts,tsx,json}\""
+		"lint": "bunx @biomejs/biome lint ./src",
+		"lint:fix": "bunx @biomejs/biome lint --apply ./src",
+		"format": "bunx @biomejs/biome format ./src",
+		"format:fix": "bunx @biomejs/biome format --write ./src",
+    "generate-endpoint": "bun run ./src/utils/generateEndpoint generate"
   },
   "keywords": [],
   "author": "",
@@ -21,14 +22,12 @@
     "fastify": "^4.23.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.4.1",
     "@flydotio/dockerfile": "latest",
     "@types/inquirer": "^9.0.6",
     "@types/node": "^20.8.3",
-    "@typescript-eslint/eslint-plugin": "^6.8.0",
-    "@typescript-eslint/parser": "^6.8.0",
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
-    "eslint": "^8.51.0",
     "inquirer": "^9.2.11",
     "typescript": "^5.2.2"
   }
